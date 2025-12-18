@@ -75,7 +75,7 @@ if submitted:
             genai.configure(api_key=api_key)
 
             model = genai.GenerativeModel(
-                model_name="gemini-1.5-pro",
+                model_name="gemini-1.5-flash",
                 generation_config={
                     "temperature": 0.8,
                     "response_mime_type": "application/json"
