@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 import json
 
 # -----------------------------------
@@ -25,9 +25,9 @@ if "generated_output" not in st.session_state:
 # Sidebar – API Key Input
 # -----------------------------------
 with st.sidebar:
-    st.header("🔑 OpenAI API Key")
+    st.header("🔑 Google AI Studio API Key")
     api_key = st.text_input(
-        "Enter your OpenAI API Key",
+        "Enter your Google API Key",
         type="password",
         value=st.session_state.api_key
     )
@@ -65,14 +65,22 @@ with st.form("chapter_form"):
     submitted = st.form_submit_button("✍️ Generate Chapter")
 
 # -----------------------------------
-# OpenAI Generation
+# Gemini Generation
 # -----------------------------------
 if submitted:
     if not api_key:
         st.error("API key is required.")
     else:
         try:
-            client = OpenAI(api_key=api_key)
+            genai.configure(api_key=api_key)
+
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-pro",
+                generation_config={
+                    "temperature": 0.8,
+                    "response_mime_type": "application/json"
+                }
+            )
 
             prompt = f"""
 You are a professional book author.
@@ -96,16 +104,9 @@ Return your response in JSON with the following structure:
 """
 
             with st.spinner("Generating chapter..."):
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": "You are a helpful writing assistant."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.8
-                )
+                response = model.generate_content(prompt)
 
-            output_text = response.choices[0].message.content
+            output_text = response.text
 
             # Attempt to parse JSON
             try:
